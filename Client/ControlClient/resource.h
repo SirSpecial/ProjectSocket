@@ -41,6 +41,12 @@
 #define IDC_SHOWALL						134
 
 #define IDC_SEND						135
+
+#define IDC_NORMAL						136
+#define IDC_CHANGENAME					137
+#define IDC_MULTI						138
+
+#define IDC_ADD						139
 /*-----------------------------------------*/
 
 #define IDR_MAINFRAME			128

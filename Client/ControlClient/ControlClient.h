@@ -6,6 +6,14 @@
 
 void err(HWND hWnd, WCHAR* error);
 list<ChatBox*> chatBoxList;
+list<WCHAR*> listMultiFile;
+WCHAR file[100];
+
+HANDLE hSentFile;
+HANDLE hReceiveFile;
+DWORD sentFileSize;
+DWORD recFileSize;
+DWORD totalRecSize;
 
 
 
@@ -28,4 +36,16 @@ HWND edEnter;
 
 //window setupInfor
 HWND checkUserDlg;
+
+HWND changeNameUploadDlg;
+HWND MultiUploadDlg;
+
+HWND edFileName;
+HWND edChangeName;
+
+LPWSTR convertSize(DWORD size);
+BOOL myCreateOpenFile(HWND hwnd, WCHAR* filename);
+BOOL myCreateSaveFile(HWND hwnd, WCHAR* filename);
+
+DWORD onSendFile(WCHAR* message);
 

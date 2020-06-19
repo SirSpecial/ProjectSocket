@@ -527,7 +527,174 @@ int Server::receiveMessage(SOCKET recSocket)
 		}
 		break;
 	}
-	
+	case SEND_FILE:
+	{
+		/*
+		* receive:	message = [FLAG | file name | NULL | file size | NULL]
+		* send:		message = [FLAG | file name | NULL | file size | NULL]
+		*/
+		WCHAR filename[100];
+		filename[0] = NULL;
+		wcscat_s(filename, L"File\\");
+		wcscat_s(filename, message + 1);
+		int len = wcslen(message);
+		DWORD size;
+
+		std::string str_path_folder("File\\*");
+		std::list<std::string> list_file = ListFileInFolder(str_path_folder);
+		for (auto file : list_file)
+		{
+			wstring wfile = wstring(file.begin(), file.end());
+			WCHAR* result = (WCHAR*)wfile.c_str();
+			if (wcscmp(result,filename) == 0)
+			{
+				message[0] = SEND_FILE_CANCEL;
+				sendMessage(*client, (WCHAR*)message, isResult / 2);
+				return 0;
+			}
+		}
+		message[0] = SEND_FILE_ACCEPT;
+		
+		len++;
+		size = *(message + len) << 16;
+		len++;
+		size = *(message + len);
+		len++;
+		len++;
+
+		hReceiveFile = CreateFile(filename, GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		recFileSize = size;
+		totalRecSize = 0;
+		sendMessage(*client, (WCHAR*)message, isResult / 2);
+		break;
+	}
+	case SEND_FILE_ACCEPT:
+	{
+		/*
+		* receive:	message = [FLAG | file name | NULL | file size | NULL]
+		* send:		message = [FLAG | size | NULL | content | NULL]
+		*/
+		WCHAR* filename = message + 1;
+
+		WCHAR send[1024];
+		int len = this->onSendFile(send);
+
+		GlobalServer.sendMessage(*client, send, len);
+		break;
+	}
+	case SEND_FILE_CANCEL:
+	{
+		/*
+		* receive:	message = [FLAG | file name | NULL | file size | NULL | sender | NULL| receiver | NULL]
+		*/
+		CloseHandle(hSentFile);
+		hSentFile = NULL;
+		break;
+	}
+	case FILE_DATA:
+	{
+		/*
+		* receive:	message = [FLAG | size | NULL | content]
+		*send:		message = [FLAG | NULL]
+		*/
+		DWORD size = message[1];
+		WCHAR* content = message + 3;
+
+		DWORD dwBytesWrite;
+		BOOL result = WriteFile(hReceiveFile, content, size, &dwBytesWrite, NULL);
+		if (!result)
+			return 0;
+
+
+		totalRecSize += dwBytesWrite;
+		if (totalRecSize >= recFileSize)
+		{
+			CloseHandle(hReceiveFile);
+			totalRecSize = 0;
+			recFileSize = 0;
+			result = 0;
+		}
+		else result = 1;
+
+		WCHAR send[100];
+		if (result)
+			send[0] = CONTINUE;
+		else send[0] = STOP;
+		send[1] = NULL;
+		GlobalServer.sendMessage(*client, send, 1);
+		break;
+	}
+	case CONTINUE:
+	{
+		/*
+		* receive:	message = [FLAG | NULL]
+		*/
+		WCHAR send[1024];
+		int len = onSendFile(send);
+		GlobalServer.sendMessage(*client, send, len);
+		break;
+	}
+	case  STOP:
+	{
+		/*
+		* receive:	message = [FLAG | NULL]
+		*/
+		CloseHandle(hSentFile);
+		hSentFile = NULL;
+		break;
+	}
+	case DOWN_FILE:
+	{
+		/*
+		receive:	message = [FLAG | filename | NULL]
+		send:		message = [FLAG | filename | NULL | file size | NULL] -success
+					message = [FLAG | filename | NULL] - fail
+		*/
+		WCHAR* filename = message + 1;
+		bool exist = 0;
+
+		std::string str_path_folder("File\\*");
+		std::list<std::string> list_file = ListFileInFolder(str_path_folder);
+		for (auto file : list_file)
+		{
+			wstring wfile = wstring(file.begin(), file.end());
+			WCHAR* result = (WCHAR*)wfile.c_str();
+			if (wcscmp(result, filename) == 0)
+			{
+				exist = 1;
+				break;
+			}
+		}
+		if (exist == 0)
+		{
+			message[0] = DOWN_FILE_CANCEL;
+			GlobalServer.sendMessage(*client, message, isResult / 2);
+			return 0;
+		}
+
+		WCHAR path[100];
+		wcscpy_s(path, L"File\\");
+		wcscat_s(path, filename);
+		WCHAR send[1000];
+		send[0] = SEND_FILE;
+		send[1] = NULL;
+		wcscat_s(send, filename);
+		hSentFile = CreateFile(path, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (hSentFile == INVALID_HANDLE_VALUE)
+			return 0;
+		DWORD highSize;
+		sentFileSize = GetFileSize(hSentFile, &highSize);
+
+		DWORD size = sentFileSize;
+		int len = wcslen(send);
+		len++;
+		send[len++] = size >> 16;
+		send[len++] = size;
+		send[len++] = NULL;
+		GlobalServer.sendMessage(*client, send, len);
+		
+		break;
+	}
 	}
 	return 0;
 }
@@ -709,4 +876,74 @@ void updateDataUser(User* user)
 	fos << user->date << L"\n";
 	fos << user->note << L"\n";
 	fos.imbue(loc);
+}
+
+std::string WcharToString(wchar_t* wchar_str)
+{
+	std::string str("");
+	int index = 0;
+	while (wchar_str[index] != 0)
+	{
+		str += (char)wchar_str[index];
+		++index;
+	}
+	return str;
+}
+
+wchar_t* StringToWchar(std::string str)
+{
+	int index = 0;
+	int count = str.size();
+	wchar_t* ws_str = new wchar_t[count + 1];
+	while (index < str.size())
+	{
+		ws_str[index] = (wchar_t)str[index];
+		index++;
+	}
+	ws_str[index] = 0;
+	return ws_str;
+}
+
+std::list<std::string> ListFileInFolder(std::string path_folder)
+{
+	WIN32_FIND_DATA find_file_data;
+
+	std::list<std::string> list_file;
+	wchar_t* path_folder_full = StringToWchar(path_folder);
+
+	HANDLE hFind = FindFirstFile(path_folder_full, &find_file_data);
+	list_file.push_back(WcharToString(find_file_data.cFileName));
+	while (FindNextFile(hFind, &find_file_data))
+	{
+		list_file.push_back(WcharToString(find_file_data.cFileName));
+	}
+	return list_file;
+}
+
+DWORD Server::onSendFile(WCHAR* message)
+{
+	int total = 0;
+	DWORD dwBytesRead = 0;
+	WCHAR buffer[1024];
+	BOOL result = ReadFile(hSentFile, buffer, 1024, &dwBytesRead, NULL);
+	if (dwBytesRead == 0)
+		return 0;
+	message[0] = FILE_DATA;
+	message[1] = dwBytesRead;
+	message[2] = NULL;
+	int len = 3;
+
+	if (dwBytesRead % 2 != 0)
+	{
+		dwBytesRead++;
+	}
+	int wsize = dwBytesRead / 2;
+
+	int i;
+	for (i = 0; i < wsize; i++)
+	{
+		message[len + i] = buffer[i];
+	}
+	len += wsize;
+	return len;
 }

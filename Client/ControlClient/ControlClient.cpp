@@ -14,11 +14,18 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(WNDPROC, WCHAR*, HINSTANCE);
 BOOL                InitInstance(HINSTANCE, int);
+
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK    ChangePasswordProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK    SetupInforProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK    CheckUserProc(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK    ChatBoxProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK    ChangeNameUploadProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK    MultiFileUploadProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK    NormalDownloadProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK    ChangeNameDownloadProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK    MultiFileDownloadProc(HWND, UINT, WPARAM, LPARAM);
+
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -39,6 +46,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	MyRegisterClass(SetupInforProc, (WCHAR*)L"setupInfor", hInstance);
 	MyRegisterClass(CheckUserProc, (WCHAR*)L"checkUser", hInstance);
 	MyRegisterClass(ChatBoxProc, (WCHAR*)L"chatBox", hInstance);
+
+
+	MyRegisterClass(ChangeNameUploadProc, (WCHAR*)L"changeNameUpload", hInstance);
+	MyRegisterClass(MultiFileUploadProc, (WCHAR*)L"multiUpload", hInstance);
+
+	MyRegisterClass(NormalDownloadProc, (WCHAR*)L"normalDownload", hInstance);
+	MyRegisterClass(ChangeNameDownloadProc, (WCHAR*)L"changeNameDownload", hInstance);
+	MyRegisterClass(MultiFileDownloadProc, (WCHAR*)L"multiDownload", hInstance);
 	// Perform application initialization:
 	if (!InitInstance(hInstance, nCmdShow))
 	{
@@ -203,16 +218,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				DestroyWindow(btRegister);
 				InvalidateRect(hWnd, 0, TRUE);
 
-				CreateWindowW(L"static", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER, 75, 30, 240, 210, hWnd, NULL, hInst, NULL);
-				CreateWindowW(L"button", L"CHANGE PASSWORD", WS_VISIBLE | WS_CHILD | SS_CENTER, 95, 45, 200, 20, hWnd, (HMENU)IDC_CHANGEPASSWORD, hInst, NULL);
-				CreateWindowW(L"button", L"SETUP INFORMATION", WS_VISIBLE | WS_CHILD | SS_CENTER, 95, 85, 200, 20, hWnd, (HMENU)IDC_SETUPINFORMATION, hInst, NULL);
-				CreateWindowW(L"button", L"CHECK UESER", WS_VISIBLE | WS_CHILD | SS_CENTER, 95, 125, 200, 20, hWnd, (HMENU)IDC_CHECKUSER, hInst, NULL);
-				CreateWindowW(L"button", L"UPLOAD FILE", WS_VISIBLE | WS_CHILD | SS_CENTER, 95, 165, 200, 20, hWnd, (HMENU)IDC_UPLOAD, hInst, NULL);
-				CreateWindowW(L"button", L"DOWNLOAD FILE", WS_VISIBLE | WS_CHILD | SS_CENTER, 95, 205, 200, 20, hWnd, (HMENU)IDC_DOWNLOAD, hInst, NULL);
-				CreateWindowW(L"static", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER, 75, 245, 240, 80, hWnd, NULL, hInst, NULL);
-				CreateWindowW(L"static", L"Partner: ", WS_VISIBLE | WS_CHILD | SS_CENTER, 90, 262, 50, 20, hWnd, NULL, hInst, NULL);
-				edPartner = CreateWindowW(L"edit", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER, 145, 260, 160, 20, hWnd, NULL, hInst, NULL);
-				CreateWindowW(L"button", L"CHAT USRER", WS_VISIBLE | WS_CHILD | SS_CENTER, 115, 290, 160, 20, hWnd, (HMENU)IDC_CHAT, hInst, NULL);
+				CreateWindowW(L"static", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER, 75, 15, 240, 100, hWnd, NULL, hInst, NULL);
+				CreateWindowW(L"button", L"CHANGE PASSWORD", WS_VISIBLE | WS_CHILD | SS_CENTER, 95, 25, 200, 20, hWnd, (HMENU)IDC_CHANGEPASSWORD, hInst, NULL);
+				CreateWindowW(L"button", L"SETUP INFORMATION", WS_VISIBLE | WS_CHILD | SS_CENTER, 95, 55, 200, 20, hWnd, (HMENU)IDC_SETUPINFORMATION, hInst, NULL);
+				CreateWindowW(L"button", L"CHECK UESER", WS_VISIBLE | WS_CHILD | SS_CENTER, 95, 85, 200, 20, hWnd, (HMENU)IDC_CHECKUSER, hInst, NULL);
+
+				CreateWindowW(L"static", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER, 75, 125, 240, 80, hWnd, NULL, hInst, NULL);
+				CreateWindowW(L"static", L"Partner: ", WS_VISIBLE | WS_CHILD | SS_CENTER, 90, 143, 50, 20, hWnd, NULL, hInst, NULL);
+				edPartner = CreateWindowW(L"edit", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER, 145, 140, 160, 20, hWnd, NULL, hInst, NULL);
+				CreateWindowW(L"button", L"CHAT USRER", WS_VISIBLE | WS_CHILD | SS_CENTER, 115, 170, 160, 20, hWnd, (HMENU)IDC_CHAT, hInst, NULL);
+
+				CreateWindowW(L"static", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER, 75, 215, 240, 130, hWnd, NULL, hInst, NULL);
+				CreateWindowW(L"static", L"Option: ", WS_VISIBLE | WS_CHILD | SS_CENTER, 90, 250, 50, 20, hWnd, NULL, hInst, NULL);
+				CreateWindowW(L"button", L"Normal", WS_VISIBLE | WS_CHILD | SS_CENTER | BS_AUTORADIOBUTTON, 160, 225, 110, 20, hWnd, (HMENU)IDC_NORMAL, hInst, NULL);
+				CreateWindowW(L"button", L"Change name", WS_VISIBLE | WS_CHILD | SS_CENTER | BS_AUTORADIOBUTTON, 160, 250, 110, 20, hWnd, (HMENU)IDC_CHANGENAME, hInst, NULL);
+				CreateWindowW(L"button", L"Multi files", WS_VISIBLE | WS_CHILD | SS_CENTER | BS_AUTORADIOBUTTON, 160, 275, 110, 20, hWnd, (HMENU)IDC_MULTI, hInst, NULL);
+				CreateWindowW(L"button", L"UPLOAD", WS_VISIBLE | WS_CHILD | SS_CENTER, 90, 305, 100, 20, hWnd, (HMENU)IDC_UPLOAD, hInst, NULL);
+				CreateWindowW(L"button", L"DOWNLOAD", WS_VISIBLE | WS_CHILD | SS_CENTER, 200, 305, 100, 20, hWnd, (HMENU)IDC_DOWNLOAD, hInst, NULL);				
 
 				break;
 			}
@@ -523,7 +545,124 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 				break;
 			}
+			case SEND_FILE:
+			{
+				/*
+				* receive:	message = [FLAG | file name | NULL | file size | NULL]
+				* send:		message = [FLAG | file name | NULL | file size | NULL]
+				*/
+				WCHAR* filename = file;
+				int len = wcslen(message);
+				DWORD size;
+
+				len++;
+				size = *(message + len) << 16;
+				len++;
+				size = *(message + len);
+				len++;
+				len++;
+				
+				bool result = myCreateSaveFile(hWnd, filename);
+				if (!result)
+				{
+					message[0] = SEND_FILE_CANCEL;
+					GlobalClient.sendMessage(message, len);
+					break;
+				}
+				message[0] = SEND_FILE_ACCEPT;
+
+				hReceiveFile = CreateFile(filename, GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+				recFileSize = size;
+				totalRecSize = 0;
+				GlobalClient.sendMessage(message, len);
+				break;
 			}
+			case SEND_FILE_ACCEPT:
+			{
+				/*
+				* receive:	message = [FLAG | file name | NULL | file size | NULL]
+				* send:		message = [FLAG | size | NULL | content | NULL]
+				*/
+				WCHAR* filename = message + 1;
+				
+				WCHAR send[1024];
+				int len = onSendFile(send);
+				
+				GlobalClient.sendMessage(send, len);
+				break;
+			}
+			case SEND_FILE_CANCEL:
+			{
+				/*
+				* receive:	message = [FLAG | file name | NULL | file size | NULL | sender | NULL| receiver | NULL]
+				*/
+				err(hWnd, (WCHAR*)L"Server don't accept you file name");
+				CloseHandle(hSentFile);
+				hSentFile = NULL;
+				break;
+			}
+			case FILE_DATA:
+			{
+				/*
+				* receive:	message = [FLAG | size | NULL | content]
+				*send:		message = [FLAG | NULL]
+				*/
+				DWORD size = message[1];
+				WCHAR* content = message + 3;
+
+				DWORD dwBytesWrite;
+				BOOL result = WriteFile(hReceiveFile, content, size, &dwBytesWrite, NULL);
+				if (!result)
+					err(hWnd, (WCHAR*)L"Failed write");
+				
+				
+				totalRecSize += dwBytesWrite;
+				if (totalRecSize >= recFileSize)
+				{
+					CloseHandle(hReceiveFile);
+					totalRecSize = 0;
+					recFileSize = 0;
+					result = 0;
+				}
+				else result = 1;
+
+				WCHAR send[100];
+				if (result)
+					send[0] = CONTINUE;
+				else send[0] = STOP;
+				send[1] = NULL;
+				GlobalClient.sendMessage(send, 1);
+				break;
+			}
+			case CONTINUE:
+			{
+				/*
+				* receive:	message = [FLAG | NULL]
+				*/
+				WCHAR send[1024];
+				int len = onSendFile(send);
+				GlobalClient.sendMessage(send, len);
+				break;
+			}
+			case  STOP:
+			{
+				/*
+				* receive:	message = [FLAG | NULL]
+				*/
+				CloseHandle(hSentFile);
+				hSentFile = NULL;
+				wcscpy_s(file, L"");
+				break;
+			}
+			case DOWN_FILE_CANCEL:
+			{
+				err(hWnd, (WCHAR*)L"File isn't exist");
+				wcscpy_s(file, L"");
+				break;
+			}
+			}
+			
+
 			break;
 		}
 		case IDC_REGISTER:
@@ -653,6 +792,86 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			int len = wcslen(message);
 			GlobalClient.sendMessage(message, len);
 			SetWindowText(edPartner, L"");
+			break;
+		}
+		case IDC_UPLOAD:
+		{
+			if (IsDlgButtonChecked(hWnd, IDC_NORMAL))
+			{
+				/*
+				* send:		message = [FLAG | file name | NULL | file size | NULL]
+				*/
+				WCHAR buffer[1000];
+				WCHAR send[1000];
+				send[0] = SEND_FILE;
+				send[1] = NULL;
+				BOOL isOpenFile = myCreateOpenFile(hWnd, buffer);
+				if (!isOpenFile) break;
+				if (hSentFile != NULL) err(hWnd, (WCHAR*)L"Wait! Your are sending a file");
+				
+				int lenBuf = wcslen(buffer);
+				int i;
+				for (i = lenBuf - 1; buffer[i] != L'\\' && i >= 0; i--);
+				wcscat_s(send, &buffer[i + 1]);
+				hSentFile = CreateFile(buffer, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+				if (hSentFile == INVALID_HANDLE_VALUE)
+					return 0;
+				DWORD highSize;
+				sentFileSize = GetFileSize(hSentFile, &highSize);
+
+				DWORD size = sentFileSize;
+				int len = wcslen(send);
+				len++;
+				send[len++] = size >> 16;
+				send[len++] = size;
+				send[len++] = NULL;
+				GlobalClient.sendMessage(send, len);
+				break;
+			}
+			else if (IsDlgButtonChecked(hWnd, IDC_CHANGENAME))
+			{
+				changeNameUploadDlg = CreateWindowW(L"changeNameUpload", L"Change name upload", WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE,
+					100, 100, 250, 150, hWnd, NULL, hInst, NULL);
+				break;
+			}
+			else if (IsDlgButtonChecked(hWnd, IDC_MULTI))
+			{
+				MultiUploadDlg = CreateWindowW(L"multiUpload", L"Multi file upload", WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE,
+					100, 100, 300, 250, hWnd, NULL, hInst, NULL);
+				break;
+			}
+			else
+			{
+				err(hWnd, (WCHAR*)L"Please choose your option upload");
+				break;
+			}
+			break;
+		}
+		case IDC_DOWNLOAD:
+		{
+			if (IsDlgButtonChecked(hWnd, IDC_NORMAL))
+			{
+				changeNameUploadDlg = CreateWindowW(L"normalDownload", L"Normal Download", WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE,
+					100, 100, 250, 150, hWnd, NULL, hInst, NULL);
+				break;
+			}
+			else if (IsDlgButtonChecked(hWnd, IDC_CHANGENAME))
+			{
+				changeNameUploadDlg = CreateWindowW(L"changeNameDownload", L"Change name upload", WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE,
+					100, 100, 250, 200, hWnd, NULL, hInst, NULL);
+				break;
+			}
+			else if (IsDlgButtonChecked(hWnd, IDC_MULTI))
+			{
+				MultiUploadDlg = CreateWindowW(L"multiUpload", L"Multi file upload", WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE,
+					100, 100, 300, 250, hWnd, NULL, hInst, NULL);
+				break;
+			}
+			else
+			{
+				err(hWnd, (WCHAR*)L"Please choose your option upload");
+				break;
+			}
 			break;
 		}
 		case IDM_ABOUT:
@@ -1146,6 +1365,26 @@ LRESULT CALLBACK ChatBoxProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	}
 	break;
 	case WM_DESTROY:
+		/*
+			* send:		message = [FLAG | sender | NULL | receiver | NULL]
+			*/
+		for (auto chatbox : chatBoxList)
+		{
+			if (chatbox->getHWND() == hWnd)
+			{
+				chatBoxList.remove(chatbox);
+				WCHAR message[101];
+				WCHAR* sender;
+				message[0] = END_CHAT;
+				message[1] = NULL;
+				wcscat(message, chatbox->getUsername().c_str());
+				sender = message + chatbox->getUsername().size() + 2;
+				wcscpy(sender, chatbox->getPartner().c_str());
+				int len = chatbox->getPartner().size() + chatbox->getPartner().size() + 3;
+				GlobalClient.sendMessage(message, len);
+				break;
+			}
+		}
 		DestroyWindow(hWnd);
 		//PostQuitMessage(0);
 		break;
@@ -1154,6 +1393,404 @@ LRESULT CALLBACK ChatBoxProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	}
 	return 0;
 }
+
+LRESULT CALLBACK ChangeNameUploadProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_CREATE:
+	{
+		CreateWindowW(L"static", L"File name:", WS_VISIBLE | WS_CHILD | SS_CENTER, 15, 10, 100, 20, hWnd, NULL, hInst, NULL);
+		edFileName = CreateWindowW(L"edit", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER, 15, 35, 200, 20, hWnd, NULL, hInst, NULL);
+		CreateWindowW(L"button", L"UPLOAD", WS_VISIBLE | WS_CHILD | SS_CENTER, 70, 70, 100, 20, hWnd, (HMENU)IDC_UPLOAD, hInst, NULL);
+
+		break;
+	}
+	case WM_COMMAND:
+	{
+		int wmId = LOWORD(wParam);
+		// Parse the menu selections:
+		switch (wmId)
+		{
+		case IDC_UPLOAD:
+		{
+			WCHAR filename[150];
+			GetWindowText(edFileName, filename, 150);
+			if (wcscmp(filename, L"") == 0)
+			{
+				err(hWnd, (WCHAR*)L"Your file name is empty");
+				return 0;
+			}
+				/*
+				* send:		message = [FLAG | file name | NULL | file size | NULL]
+				*/
+			WCHAR buffer[1000];
+			WCHAR send[1000];
+			send[0] = SEND_FILE;
+			send[1] = NULL;
+			BOOL isOpenFile = myCreateOpenFile(hWnd, buffer);
+			if (!isOpenFile) break;
+			if (hSentFile != NULL) err(hWnd, (WCHAR*)L"Wait! Your are sending a file");
+
+			int lenBuf = wcslen(buffer);
+			
+			wcscat_s(send, filename);
+			
+			hSentFile = CreateFile(buffer, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (hSentFile == INVALID_HANDLE_VALUE)
+				return 0;
+			DWORD highSize;
+			sentFileSize = GetFileSize(hSentFile, &highSize);
+
+			DWORD size = sentFileSize;
+			int len = wcslen(send);
+			len++;
+			send[len++] = size >> 16;
+			send[len++] = size;
+			send[len++] = NULL;
+			GlobalClient.sendMessage(send, len);
+			SetWindowText(edFileName, L"");
+			break;
+		}
+		case IDM_ABOUT:
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			break;
+		case IDM_EXIT:
+			DestroyWindow(hWnd);
+			break;
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+	}
+	break;
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+		// TODO: Add any drawing code that uses hdc here...
+		EndPaint(hWnd, &ps);
+	}
+	break;
+	case WM_DESTROY:
+		
+		DestroyWindow(hWnd);
+		//PostQuitMessage(0);
+		break;
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
+}
+
+LRESULT CALLBACK MultiFileUploadProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_CREATE:
+	{
+		CreateWindowW(L"static", L"Multi file name:", WS_VISIBLE | WS_CHILD | SS_CENTER, 20, 15, 100, 20, hWnd, NULL, hInst, NULL);
+		edFileName = CreateWindowW(L"edit", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER | ES_AUTOVSCROLL | ES_MULTILINE | ES_READONLY, 20, 40, 248, 130, hWnd, NULL, hInst, NULL);
+		CreateWindowW(L"button", L"ADD", WS_VISIBLE | WS_CHILD | SS_CENTER, 50, 180, 80, 20, hWnd, (HMENU)IDC_ADD, hInst, NULL);
+		CreateWindowW(L"button", L"UPLOAD", WS_VISIBLE | WS_CHILD | SS_CENTER, 150, 180, 80, 20, hWnd, (HMENU)IDC_UPLOAD, hInst, NULL);
+
+		break;
+	}
+	case WM_COMMAND:
+	{
+		int wmId = LOWORD(wParam);
+		// Parse the menu selections:
+		switch (wmId)
+		{
+		case IDC_ADD:
+		{
+			WCHAR buffer[1000];
+			BOOL isOpenFile = myCreateOpenFile(hWnd, buffer);
+			if (!isOpenFile) break;
+			int len = wcslen(buffer);
+			listMultiFile.push_back(buffer);
+
+			int lenBuf = wcslen(buffer);
+			int i;
+			for (i = lenBuf - 1; buffer[i] != L'\\' && i >= 0; i--);
+
+			WCHAR buff[10000];
+			
+			GetWindowText(edFileName, buff, 10000);
+			wcscat_s(buff, L"\r\n");
+			wcscat_s(buff, &buffer[i+1]);
+			SetWindowText(edFileName, buff);
+
+			SendMessageA(edFileName, EM_SETSEL, 0, -1);
+			SendMessageA(edFileName, EM_SETSEL, -1, -1);
+			SendMessageA(edFileName, EM_SCROLLCARET, 0, 0);
+			break;
+		}
+		case IDC_UPLOAD:
+		{
+			for (auto filename : listMultiFile)
+			{
+				/*
+				* send:		message = [FLAG | file name | NULL | file size | NULL]
+				*/
+				WCHAR buffer[1000];
+				buffer[0] = NULL;
+				wcscat(buffer, filename);
+				WCHAR send[1000];
+				send[0] = SEND_FILE;
+				send[1] = NULL;
+				if (hSentFile != NULL) err(hWnd, (WCHAR*)L"Wait! Your are sending a file");
+
+				int lenBuf = wcslen(buffer);
+				int i;
+				for (i = lenBuf - 1; buffer[i] != L'\\' && i >= 0; i--);
+				wcscat_s(send, &buffer[i + 1]);
+				hSentFile = CreateFile(buffer, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+				if (hSentFile == INVALID_HANDLE_VALUE)
+					return 0;
+				DWORD highSize;
+				sentFileSize = GetFileSize(hSentFile, &highSize);
+
+				DWORD size = sentFileSize;
+				int len = wcslen(send);
+				len++;
+				send[len++] = size >> 16;
+				send[len++] = size;
+				send[len++] = NULL;
+				GlobalClient.sendMessage(send, len);
+				
+				while (hSentFile != NULL);
+			}
+			listMultiFile.clear();
+			break;
+		}
+		case IDM_ABOUT:
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			break;
+		case IDM_EXIT:
+			DestroyWindow(hWnd);
+			break;
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+	}
+	break;
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+		// TODO: Add any drawing code that uses hdc here...
+		EndPaint(hWnd, &ps);
+	}
+	break;
+	case WM_DESTROY:
+		
+		DestroyWindow(hWnd);
+		//PostQuitMessage(0);
+		break;
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
+}
+
+LRESULT CALLBACK NormalDownloadProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_CREATE:
+	{
+		CreateWindowW(L"static", L"File name:", WS_VISIBLE | WS_CHILD | SS_CENTER, 15, 10, 100, 20, hWnd, NULL, hInst, NULL);
+		edFileName = CreateWindowW(L"edit", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER, 15, 35, 200, 20, hWnd, NULL, hInst, NULL);
+		CreateWindowW(L"button", L"DOWNLOAD", WS_VISIBLE | WS_CHILD | SS_CENTER, 70, 70, 100, 20, hWnd, (HMENU)IDC_DOWNLOAD, hInst, NULL);
+		break;
+	}
+	case WM_COMMAND:
+	{
+		int wmId = LOWORD(wParam);
+		// Parse the menu selections:
+		switch (wmId)
+		{
+		case IDC_DOWNLOAD:
+		{
+			/*
+			send: [FLAG |  filename | NULL]
+			*/
+			WCHAR buffer[100];
+			GetWindowText(edFileName, buffer, 100);
+			if (wcscmp(buffer, L"") == 0)
+			{
+				err(hWnd, (WCHAR*)L"File name is empty");
+				break;
+			}
+			WCHAR send[200];
+			send[0] = DOWN_FILE;
+			send[1] = NULL;
+			wcscat_s(send, buffer);
+			wcscpy_s(file, buffer);
+			GlobalClient.sendMessage(send, wcslen(send));
+			SetWindowText(edFileName, L"");
+			break;
+		}
+		case IDM_ABOUT:
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			break;
+		case IDM_EXIT:
+			DestroyWindow(hWnd);
+			break;
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+	}
+	break;
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+		// TODO: Add any drawing code that uses hdc here...
+		EndPaint(hWnd, &ps);
+	}
+	break;
+	case WM_DESTROY:
+		
+		DestroyWindow(hWnd);
+		//PostQuitMessage(0);
+		break;
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
+}
+
+LRESULT CALLBACK ChangeNameDownloadProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_CREATE:
+	{
+		CreateWindowW(L"static", L"File name:", WS_VISIBLE | WS_CHILD | SS_CENTER, 15, 10, 100, 20, hWnd, NULL, hInst, NULL);
+		edFileName = CreateWindowW(L"edit", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER, 15, 35, 200, 20, hWnd, NULL, hInst, NULL);
+		CreateWindowW(L"static", L"Change name:", WS_VISIBLE | WS_CHILD | SS_CENTER, 15, 60, 100, 20, hWnd, NULL, hInst, NULL);
+		edChangeName = CreateWindowW(L"edit", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER, 15, 85, 200, 20, hWnd, NULL, hInst, NULL);
+		CreateWindowW(L"button", L"DOWNLOAD", WS_VISIBLE | WS_CHILD | SS_CENTER, 70, 120, 100, 20, hWnd, (HMENU)IDC_DOWNLOAD, hInst, NULL);
+		break;
+	}
+	case WM_COMMAND:
+	{
+		int wmId = LOWORD(wParam);
+		// Parse the menu selections:
+		switch (wmId)
+		{
+		case IDC_DOWNLOAD:
+		{
+			WCHAR bufferFile[100], bufferChange[100];
+			GetWindowText(edFileName, bufferFile, 100);
+			if (wcscmp(bufferFile, L"") == 0)
+			{
+				err(hWnd, (WCHAR*)L"File name is empty");
+				return 0;
+			}
+
+			GetWindowText(edChangeName, bufferChange, 100);
+			if (wcscmp(bufferChange, L"") == 0)
+			{
+				err(hWnd, (WCHAR*)L"File name is empty");
+				return 0;
+			}
+
+			wcscpy_s(file, bufferChange);
+
+			/*
+			send: [FLAG |  filename | NULL]
+			*/
+			WCHAR send[200];
+			send[0] = DOWN_FILE;
+			send[1] = NULL;
+			wcscat_s(send, bufferFile);
+			GlobalClient.sendMessage(send, wcslen(send));
+			//SetWindowText(edFileName, L"");
+			//SetWindowText(edChangeName, L"");
+			break;
+		}
+		case IDM_ABOUT:
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			break;
+		case IDM_EXIT:
+			DestroyWindow(hWnd);
+			break;
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+	}
+	break;
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+		// TODO: Add any drawing code that uses hdc here...
+		EndPaint(hWnd, &ps);
+	}
+	break;
+	case WM_DESTROY:
+
+		DestroyWindow(hWnd);
+		//PostQuitMessage(0);
+		break;
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
+}
+
+LRESULT CALLBACK MultiFileDownloadProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_CREATE:
+	{
+		CreateWindowW(L"static", L"Multi file name:", WS_VISIBLE | WS_CHILD | SS_CENTER, 20, 15, 100, 20, hWnd, NULL, hInst, NULL);
+		edFileName = CreateWindowW(L"edit", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER, 20, 40, 248, 130, hWnd, NULL, hInst, NULL);
+		CreateWindowW(L"button", L"ADD", WS_VISIBLE | WS_CHILD | SS_CENTER, 50, 180, 80, 20, hWnd, (HMENU)IDC_ADD, hInst, NULL);
+		CreateWindowW(L"button", L"UPLOAD", WS_VISIBLE | WS_CHILD | SS_CENTER, 150, 180, 80, 20, hWnd, (HMENU)IDC_UPLOAD, hInst, NULL);
+
+		break;
+	}
+	case WM_COMMAND:
+	{
+		int wmId = LOWORD(wParam);
+		// Parse the menu selections:
+		switch (wmId)
+		{
+
+		case IDM_ABOUT:
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			break;
+		case IDM_EXIT:
+			DestroyWindow(hWnd);
+			break;
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+	}
+	break;
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+		// TODO: Add any drawing code that uses hdc here...
+		EndPaint(hWnd, &ps);
+	}
+	break;
+	case WM_DESTROY:
+
+		DestroyWindow(hWnd);
+		//PostQuitMessage(0);
+		break;
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
+}
+
 // Message handler for about box.
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -1179,4 +1816,113 @@ void err(HWND hWnd, WCHAR* error)
 {
 	MessageBeep(MB_ICONERROR);
 	MessageBox(hWnd, (LPCWSTR)error, L"ERROR", MB_OK | MB_ICONERROR);
+}
+
+BOOL myCreateOpenFile(HWND hwnd, WCHAR* filename)
+{
+	OPENFILENAMEW ofn = { 0 };
+	WCHAR szFile[260];
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hwnd;
+	ofn.lpstrFile = szFile;
+	ofn.lpstrFile[0] = '\0';
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFilter = TEXT("All Files (*.*)\0*.*\0");
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+	if (!GetOpenFileName(&ofn))
+		return FALSE;
+	wcscpy(filename, ofn.lpstrFile);
+	return TRUE;
+}
+
+BOOL myCreateSaveFile(HWND hwnd, WCHAR* path)
+{
+	OPENFILENAMEW ofn = { 0 };
+	WCHAR szFile[260];
+	WCHAR ex[10];
+	wcscpy(szFile, path);
+	int j;
+	for (j = wcslen(szFile) - 1; j > 0 && szFile[j] != L'.'; j--) {}
+	if (j != 0)
+	{
+		wcscpy(ex, szFile + j);
+	}
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = hwnd;
+	ofn.lpstrFile = szFile;
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFilter = TEXT("All Files (*.*)\0*.*\0");
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+	if (GetSaveFileName(&ofn) == FALSE)
+		return FALSE;
+	wcscpy(path, ofn.lpstrFile);
+	int i;
+	for (i = wcslen(path) - 1; i > 0 && path[i] != L'.'; i--) {}
+
+	if (i == 0)
+	{
+		if (j != 0)
+		{
+			wcscat(path, ex);
+		}
+	}
+	return TRUE;
+}
+
+LPWSTR convertSize(DWORD size)
+{
+	WCHAR* buffer = new WCHAR[9];
+	if (size / 1073741824 > 0)
+	{
+		wsprintf(buffer, L"%d.%d GB", size / 1073741824, (int)((double)(size % 1073741824) / (double)1073741824)) * 10;
+	}
+	else if (size / 1048576 > 0)
+	{
+		wsprintf(buffer, L"%d.%d MB", size / 1048576, (int)((float)(size % 1048576) / (float)1048576)) * 10;
+	}
+	else if (size / 1024 > 0)
+	{
+		wsprintf(buffer, L"%d.%d KB", size / 1024, (int)((float)(size % 1024) / (float)1024)) * 10;
+	}
+	else
+	{
+		wsprintf(buffer, L"%d Byte", size);
+	}
+	return buffer;
+}
+
+DWORD onSendFile(WCHAR* message)
+{
+	int total = 0;
+	DWORD dwBytesRead = 0;
+	WCHAR buffer[1024];
+	BOOL result = ReadFile(hSentFile, buffer, 1024, &dwBytesRead, NULL);
+	if (dwBytesRead == 0)
+		return 0;
+	message[0] = FILE_DATA;
+	message[1] = dwBytesRead;
+	message[2] = NULL;
+	int len = 3;
+
+	if (dwBytesRead % 2 != 0)
+	{
+		dwBytesRead++;
+	}
+	int wsize = dwBytesRead / 2;
+
+	int i;
+	for (i = 0; i < wsize; i++)
+	{
+		message[len + i] = buffer[i];
+	}
+	len += wsize;
+	return len;
 }

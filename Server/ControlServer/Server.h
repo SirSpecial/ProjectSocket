@@ -8,6 +8,12 @@
 class Server
 {
 private:
+	HANDLE hSentFile;
+	HANDLE hReceiveFile;
+	DWORD sentFileSize;
+	DWORD recFileSize;
+	DWORD totalRecSize;
+
 	SOCKET m_socketListen;
 	SOCKET m_socketClient;
 	bool m_isOnline;
@@ -35,7 +41,7 @@ public :
 	int getNumberUser();
 	void addUser(User* user);
 	list<User*>& getUser();
-
+	DWORD onSendFile(WCHAR* message);
 	~Server();
 };
 
@@ -46,3 +52,7 @@ void loadDataUser();
 
 void updateData(User* user);
 void updateDataUser(User* user);
+
+std::string WcharToString(wchar_t* wchar_str);
+wchar_t* StringToWchar(std::string str);
+std::list<std::string> ListFileInFolder(std::string path_folder);
