@@ -7,7 +7,7 @@
 void err(HWND hWnd, WCHAR* error);
 list<ChatBox*> chatBoxList;
 list<WCHAR*> listMultiFile;
-WCHAR file[100];
+WCHAR file[100]; 
 
 HANDLE hSentFile;
 HANDLE hReceiveFile;

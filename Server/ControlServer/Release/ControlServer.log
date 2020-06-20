@@ -1,0 +1,15 @@
+﻿  Server.cpp
+  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
+D:\ProjectSocket\Server\ControlServer\Server.cpp(347,18): warning C4018: '<': signed/unsigned mismatch
+D:\ProjectSocket\Server\ControlServer\Server.cpp(353,18): warning C4018: '<': signed/unsigned mismatch
+D:\ProjectSocket\Server\ControlServer\Server.cpp(688,18): warning C4244: '=': conversion from 'DWORD' to 'WCHAR', possible loss of data
+D:\ProjectSocket\Server\ControlServer\Server.cpp(741,17): warning C4244: '=': conversion from 'DWORD' to 'WCHAR', possible loss of data
+D:\ProjectSocket\Server\ControlServer\Server.cpp(805,17): warning C4244: '=': conversion from 'DWORD' to 'WCHAR', possible loss of data
+D:\ProjectSocket\Server\ControlServer\Server.cpp(1011,15): warning C4018: '<': signed/unsigned mismatch
+D:\ProjectSocket\Server\ControlServer\Server.cpp(1045,15): warning C4244: '=': conversion from 'DWORD' to 'WCHAR', possible loss of data
+  Generating code
+  1 of 692 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    1 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  ControlServer.vcxproj -> D:\ProjectSocket\Server\ControlServer\Release\ControlServer.exe

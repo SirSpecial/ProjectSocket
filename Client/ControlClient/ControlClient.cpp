@@ -235,7 +235,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				CreateWindowW(L"button", L"Multi files", WS_VISIBLE | WS_CHILD | SS_CENTER | BS_AUTORADIOBUTTON, 160, 275, 110, 20, hWnd, (HMENU)IDC_MULTI, hInst, NULL);
 				CreateWindowW(L"button", L"UPLOAD", WS_VISIBLE | WS_CHILD | SS_CENTER, 90, 305, 100, 20, hWnd, (HMENU)IDC_UPLOAD, hInst, NULL);
 				CreateWindowW(L"button", L"DOWNLOAD", WS_VISIBLE | WS_CHILD | SS_CENTER, 200, 305, 100, 20, hWnd, (HMENU)IDC_DOWNLOAD, hInst, NULL);				
-
+				
+				wcscpy(file, L"");
 				break;
 			}
 			case LOGIN_FAILURE:
@@ -551,7 +552,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				* receive:	message = [FLAG | file name | NULL | file size | NULL]
 				* send:		message = [FLAG | file name | NULL | file size | NULL]
 				*/
-				WCHAR* filename = file;
+				WCHAR* filename;
+				if (wcscmp(file, L"") != 0)
+					filename = file;
+				else filename = message + 1;
 				int len = wcslen(message);
 				DWORD size;
 
@@ -574,6 +578,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				hReceiveFile = CreateFile(filename, GENERIC_WRITE, 0, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 				recFileSize = size;
 				totalRecSize = 0;
+				wcscpy(file, L"");
 				GlobalClient.sendMessage(message, len);
 				break;
 			}
@@ -596,7 +601,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				/*
 				* receive:	message = [FLAG | file name | NULL | file size | NULL | sender | NULL| receiver | NULL]
 				*/
-				err(hWnd, (WCHAR*)L"Server don't accept you file name");
+				WCHAR mess[200];
+				wcscpy(mess, L"Server don't accept you file name: ");
+				wcscat(mess, message + 1);
+				err(hWnd, (WCHAR*) mess);
 				CloseHandle(hSentFile);
 				hSentFile = NULL;
 				break;
@@ -652,11 +660,53 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				CloseHandle(hSentFile);
 				hSentFile = NULL;
 				wcscpy_s(file, L"");
+				if (listMultiFile.size() != 0)
+				{
+					/*
+					* send:		message = [FLAG | file name | NULL | file size | NULL]
+					*/
+					WCHAR buffer[1000];
+
+					WCHAR send[1000];
+					send[0] = SEND_FILE;
+					send[1] = NULL;
+					if (listMultiFile.size() == 0)
+					{
+						err(hWnd, (WCHAR*)L"File name is empty");
+						return 0;
+					}
+
+					wcscpy(buffer, *listMultiFile.begin());
+					listMultiFile.erase(listMultiFile.begin());
+
+					if (hSentFile != NULL) err(hWnd, (WCHAR*)L"Wait! Your are sending a file");
+
+					int lenBuf = wcslen(buffer);
+					int i;
+					for (i = lenBuf - 1; buffer[i] != L'\\' && i >= 0; i--);
+					wcscat_s(send, &buffer[i + 1]);
+					hSentFile = CreateFile(buffer, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+					if (hSentFile == INVALID_HANDLE_VALUE)
+						return 0;
+					DWORD highSize;
+					sentFileSize = GetFileSize(hSentFile, &highSize);
+
+					DWORD size = sentFileSize;
+					int len = wcslen(send);
+					len++;
+					send[len++] = size >> 16;
+					send[len++] = size;
+					send[len++] = NULL;
+					GlobalClient.sendMessage(send, len);
+				}
 				break;
 			}
 			case DOWN_FILE_CANCEL:
 			{
-				err(hWnd, (WCHAR*)L"File isn't exist");
+				WCHAR mess[200];
+				wcscpy(mess, L"Server don't have you file name: ");
+				wcscat(mess, message + 1);
+				err(hWnd, (WCHAR*)mess);
 				wcscpy_s(file, L"");
 				break;
 			}
@@ -863,7 +913,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			else if (IsDlgButtonChecked(hWnd, IDC_MULTI))
 			{
-				MultiUploadDlg = CreateWindowW(L"multiUpload", L"Multi file upload", WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE,
+				MultiUploadDlg = CreateWindowW(L"multiDownload", L"Multi file download", WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE,
 					100, 100, 300, 250, hWnd, NULL, hInst, NULL);
 				break;
 			}
@@ -917,7 +967,7 @@ LRESULT CALLBACK ChangePasswordProc(HWND hWnd, UINT message, WPARAM wParam, LPAR
 		CreateWindow(L"static", L"New Password:", WS_VISIBLE | WS_CHILD | ES_CENTER, 80, 70, 150, 20, hWnd, 0, hInst, 0);
 		edNewPass = CreateWindow(L"edit", L"", WS_VISIBLE | WS_CHILD | ES_CENTER | ES_PASSWORD | WS_BORDER, 240, 70, 180, 20, hWnd, 0, hInst, 0);
 
-		CreateWindow(L"static", L"Old Password:", WS_VISIBLE | WS_CHILD | ES_CENTER, 80, 100, 150, 20, hWnd, 0, hInst, 0);
+		CreateWindow(L"static", L"Confirm Password:", WS_VISIBLE | WS_CHILD | ES_CENTER, 80, 100, 150, 20, hWnd, 0, hInst, 0);
 		edConfirmPass = CreateWindow(L"edit", L"", WS_VISIBLE | WS_CHILD | ES_CENTER | ES_PASSWORD | WS_BORDER, 240, 100, 180, 20, hWnd, 0, hInst, 0);
 
 		CreateWindow(L"button", L"ENTER", WS_VISIBLE | WS_CHILD | SS_CENTER, 200, 140, 100, 20, hWnd, (HMENU)IDC_ENTER, hInst, 0);
@@ -1503,10 +1553,11 @@ LRESULT CALLBACK MultiFileUploadProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 		{
 		case IDC_ADD:
 		{
-			WCHAR buffer[1000];
+			WCHAR* buffer = new WCHAR[100];
 			BOOL isOpenFile = myCreateOpenFile(hWnd, buffer);
 			if (!isOpenFile) break;
 			int len = wcslen(buffer);
+
 			listMultiFile.push_back(buffer);
 
 			int lenBuf = wcslen(buffer);
@@ -1527,40 +1578,44 @@ LRESULT CALLBACK MultiFileUploadProc(HWND hWnd, UINT message, WPARAM wParam, LPA
 		}
 		case IDC_UPLOAD:
 		{
-			for (auto filename : listMultiFile)
+			
+			/*
+			* send:		message = [FLAG | file name | NULL | file size | NULL]
+			*/
+			WCHAR buffer[1000];
+
+			WCHAR send[1000];
+			send[0] = SEND_FILE;
+			send[1] = NULL;
+			if (listMultiFile.size() == 0)
 			{
-				/*
-				* send:		message = [FLAG | file name | NULL | file size | NULL]
-				*/
-				WCHAR buffer[1000];
-				buffer[0] = NULL;
-				wcscat(buffer, filename);
-				WCHAR send[1000];
-				send[0] = SEND_FILE;
-				send[1] = NULL;
-				if (hSentFile != NULL) err(hWnd, (WCHAR*)L"Wait! Your are sending a file");
-
-				int lenBuf = wcslen(buffer);
-				int i;
-				for (i = lenBuf - 1; buffer[i] != L'\\' && i >= 0; i--);
-				wcscat_s(send, &buffer[i + 1]);
-				hSentFile = CreateFile(buffer, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-				if (hSentFile == INVALID_HANDLE_VALUE)
-					return 0;
-				DWORD highSize;
-				sentFileSize = GetFileSize(hSentFile, &highSize);
-
-				DWORD size = sentFileSize;
-				int len = wcslen(send);
-				len++;
-				send[len++] = size >> 16;
-				send[len++] = size;
-				send[len++] = NULL;
-				GlobalClient.sendMessage(send, len);
-				
-				while (hSentFile != NULL);
+				err(hWnd, (WCHAR*)L"File name is empty");
+				return 0;
 			}
-			listMultiFile.clear();
+
+			wcscpy(buffer, *listMultiFile.begin());
+			listMultiFile.erase(listMultiFile.begin());
+			if (hSentFile != NULL) err(hWnd, (WCHAR*)L"Wait! Your are sending a file");
+
+			int lenBuf = wcslen(buffer);
+			int i;
+			for (i = lenBuf - 1; buffer[i] != L'\\' && i >= 0; i--);
+			wcscat_s(send, &buffer[i + 1]);
+			hSentFile = CreateFile(buffer, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (hSentFile == INVALID_HANDLE_VALUE)
+				return 0;
+			DWORD highSize;
+			sentFileSize = GetFileSize(hSentFile, &highSize);
+
+			DWORD size = sentFileSize;
+			int len = wcslen(send);
+			len++;
+			send[len++] = size >> 16;
+			send[len++] = size;
+			send[len++] = NULL;
+
+			GlobalClient.sendMessage(send, len);
+			SetWindowText(edFileName, L"");
 			break;
 		}
 		case IDM_ABOUT:
@@ -1748,19 +1803,60 @@ LRESULT CALLBACK MultiFileDownloadProc(HWND hWnd, UINT message, WPARAM wParam, L
 	case WM_CREATE:
 	{
 		CreateWindowW(L"static", L"Multi file name:", WS_VISIBLE | WS_CHILD | SS_CENTER, 20, 15, 100, 20, hWnd, NULL, hInst, NULL);
-		edFileName = CreateWindowW(L"edit", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER, 20, 40, 248, 130, hWnd, NULL, hInst, NULL);
-		CreateWindowW(L"button", L"ADD", WS_VISIBLE | WS_CHILD | SS_CENTER, 50, 180, 80, 20, hWnd, (HMENU)IDC_ADD, hInst, NULL);
-		CreateWindowW(L"button", L"UPLOAD", WS_VISIBLE | WS_CHILD | SS_CENTER, 150, 180, 80, 20, hWnd, (HMENU)IDC_UPLOAD, hInst, NULL);
-
+		edFileName = CreateWindowW(L"edit", L"", WS_VISIBLE | WS_CHILD | SS_CENTER | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL, 20, 40, 248, 130, hWnd, NULL, hInst, NULL);
+		CreateWindowW(L"button", L"DOWNLOAD", WS_VISIBLE | WS_CHILD | SS_CENTER, 100, 180, 100, 20, hWnd, (HMENU)IDC_DOWNLOAD, hInst, NULL);
 		break;
 	}
 	case WM_COMMAND:
 	{
+	
 		int wmId = LOWORD(wParam);
 		// Parse the menu selections:
 		switch (wmId)
 		{
+		case IDC_DOWNLOAD:
+		{
+			WCHAR buffer[1000];
+			GetWindowText(edFileName, buffer, 1000);
+			if (wcscmp(buffer, L"") == 0)
+			{
+				err(hWnd, (WCHAR*)L"File name is empty");
+				return 0;
+			}
+			wstring buff;
+			buff.append(buffer);
+			list<WCHAR*> listFile;
+			while (buff.find(L"\r") != -1)
+			{
+				int k = buff.find(L"\r");
+				WCHAR* temp = new WCHAR[100];
+				wcscpy(temp,buff.substr(0, k).c_str());
+				listFile.push_back(temp);
+				buff = buff.substr(k + 2, buff.size());
+			}
+			WCHAR* temp = new WCHAR[100];
+			wcscpy(temp, buff.substr(0, buff.size()).c_str());
+			listFile.push_back(temp);
 
+			WCHAR send[1024];
+			send[0] = DOWN_MULTI;
+			send[1] = listFile.size();
+			send[2] = NULL;
+			int len = 2;
+			/*
+			send: message = [FLAG | number | file1 | NULL | filen | NULL]
+			*/
+			for (auto list : listFile)
+			{
+				wcscpy(send + len, list);
+				len += wcslen(list);
+				send[len] = NULL;
+				len++;
+			}
+			GlobalClient.sendMessage(send, len);
+			listMultiFile.clear();
+			break;
+		}
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;

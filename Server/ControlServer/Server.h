@@ -14,6 +14,8 @@ private:
 	DWORD recFileSize;
 	DWORD totalRecSize;
 
+	list<WCHAR*> listMultiFile;
+
 	SOCKET m_socketListen;
 	SOCKET m_socketClient;
 	bool m_isOnline;

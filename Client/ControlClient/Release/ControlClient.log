@@ -1,0 +1,27 @@
+﻿  ChatBox.cpp
+  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
+D:\ProjectSocket\Client\ControlClient\ChatBox.cpp(12,186): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+D:\ProjectSocket\Client\ControlClient\ChatBox.cpp(12,179): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+D:\ProjectSocket\Client\ControlClient\ChatBox.cpp(12,173): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+D:\ProjectSocket\Client\ControlClient\ChatBox.cpp(12,167): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+D:\ProjectSocket\Client\ControlClient\ChatBox.cpp(13,19): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  Client.cpp
+  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
+  ControlClient.cpp
+D:\ProjectSocket\Client\ControlClient\ControlClient.cpp(698,20): warning C4244: '=': conversion from 'DWORD' to 'WCHAR', possible loss of data
+D:\ProjectSocket\Client\ControlClient\ControlClient.cpp(876,19): warning C4244: '=': conversion from 'DWORD' to 'WCHAR', possible loss of data
+D:\ProjectSocket\Client\ControlClient\ControlClient.cpp(185,10): warning C4101: 'send': unreferenced local variable
+D:\ProjectSocket\Client\ControlClient\ControlClient.cpp(1499,18): warning C4244: '=': conversion from 'DWORD' to 'WCHAR', possible loss of data
+D:\ProjectSocket\Client\ControlClient\ControlClient.cpp(1614,18): warning C4244: '=': conversion from 'DWORD' to 'WCHAR', possible loss of data
+D:\ProjectSocket\Client\ControlClient\ControlClient.cpp(1843,29): warning C4267: '=': conversion from 'size_t' to 'WCHAR', possible loss of data
+D:\ProjectSocket\Client\ControlClient\ControlClient.cpp(1981,109): warning C4552: '*': result of expression not used
+D:\ProjectSocket\Client\ControlClient\ControlClient.cpp(1985,98): warning C4552: '*': result of expression not used
+D:\ProjectSocket\Client\ControlClient\ControlClient.cpp(1989,89): warning C4552: '*': result of expression not used
+D:\ProjectSocket\Client\ControlClient\ControlClient.cpp(2007,15): warning C4244: '=': conversion from 'DWORD' to 'WCHAR', possible loss of data
+  Thread.cpp
+  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 533 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  ControlClient.vcxproj -> D:\ProjectSocket\Client\ControlClient\Release\ControlClient.exe

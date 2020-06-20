@@ -494,7 +494,7 @@ int Server::receiveMessage(SOCKET recSocket)
 
 		/*
 		* receive:	message = [FLAG | sender | NULL | receiver | NULL | content | NULL]
-		* receive:	message = [FLAG | sender | NULL | receiver | NULL | content | NULL]
+		* send:	message = [FLAG | sender | NULL | receiver | NULL | content | NULL]
 		*/
 		WCHAR* receiver;
 		receiver = message + wcslen(message) + 1;
@@ -579,7 +579,7 @@ int Server::receiveMessage(SOCKET recSocket)
 		WCHAR send[1024];
 		int len = this->onSendFile(send);
 
-		GlobalServer.sendMessage(*client, send, len);
+		sendMessage(*client, send, len);
 		break;
 	}
 	case SEND_FILE_CANCEL:
@@ -621,7 +621,7 @@ int Server::receiveMessage(SOCKET recSocket)
 			send[0] = CONTINUE;
 		else send[0] = STOP;
 		send[1] = NULL;
-		GlobalServer.sendMessage(*client, send, 1);
+		sendMessage(*client, send, 1);
 		break;
 	}
 	case CONTINUE:
@@ -631,7 +631,7 @@ int Server::receiveMessage(SOCKET recSocket)
 		*/
 		WCHAR send[1024];
 		int len = onSendFile(send);
-		GlobalServer.sendMessage(*client, send, len);
+		sendMessage(*client, send, len);
 		break;
 	}
 	case  STOP:
@@ -641,6 +641,55 @@ int Server::receiveMessage(SOCKET recSocket)
 		*/
 		CloseHandle(hSentFile);
 		hSentFile = NULL;
+		if (listMultiFile.size() != 0)
+		{
+			/*
+			* send:		message = [FLAG | file name | NULL | file size | NULL]
+			*/
+			WCHAR* filename = *listMultiFile.begin();
+			bool exist = 0;
+
+			std::string str_path_folder("File\\*");
+			std::list<std::string> list_file = ListFileInFolder(str_path_folder);
+			for (auto file : list_file)
+			{
+				wstring wfile = wstring(file.begin(), file.end());
+				WCHAR* result = (WCHAR*)wfile.c_str();
+				if (wcscmp(result, filename) == 0)
+				{
+					exist = 1;
+					break;
+				}
+			}
+			if (exist == 0)
+			{
+				message[0] = DOWN_FILE_CANCEL;
+				sendMessage(*client, message, wcslen(filename) + 1);
+				return 0;
+			}
+
+			WCHAR path[100];
+			wcscpy_s(path, L"File\\");
+			wcscat_s(path, filename);
+			WCHAR send[1000];
+			send[0] = SEND_FILE;
+			send[1] = NULL;
+			wcscat_s(send, filename);
+			hSentFile = CreateFile(path, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+			if (hSentFile == INVALID_HANDLE_VALUE)
+				return 0;
+			DWORD highSize;
+			sentFileSize = GetFileSize(hSentFile, &highSize);
+
+			DWORD size = sentFileSize;
+			int len = wcslen(send);
+			len++;
+			send[len++] = size >> 16;
+			send[len++] = size;
+			send[len++] = NULL;
+			sendMessage(*client, send, len);
+			listMultiFile.erase(listMultiFile.begin());
+		}
 		break;
 	}
 	case DOWN_FILE:
@@ -668,7 +717,7 @@ int Server::receiveMessage(SOCKET recSocket)
 		if (exist == 0)
 		{
 			message[0] = DOWN_FILE_CANCEL;
-			GlobalServer.sendMessage(*client, message, isResult / 2);
+			sendMessage(*client, message, isResult / 2);
 			return 0;
 		}
 
@@ -691,7 +740,71 @@ int Server::receiveMessage(SOCKET recSocket)
 		send[len++] = size >> 16;
 		send[len++] = size;
 		send[len++] = NULL;
-		GlobalServer.sendMessage(*client, send, len);
+		sendMessage(*client, send, len);
+		
+		break;
+	}
+	case DOWN_MULTI:
+	{
+		/*
+		receive:	message = [FLAG | number | file1 | NULL | filen | NULL]
+		send:		message = [FLAG | filename | NULL | file size | NULL] -success
+					message = [FLAG | filename | NULL] - fail		
+		*/
+		int number = message[1];
+		int len = 2;
+		for (int i = 0; i < number; i++)
+		{
+			WCHAR* buffer = new WCHAR[100];
+			wcscpy(buffer, message + len);
+			listMultiFile.push_back(buffer);
+			len += wcslen(message + len);
+			len++;
+		}
+
+		WCHAR* filename = *listMultiFile.begin();
+		listMultiFile.erase(listMultiFile.begin());
+		bool exist = 0;
+
+		std::string str_path_folder("File\\*");
+		std::list<std::string> list_file = ListFileInFolder(str_path_folder);
+		for (auto file : list_file)
+		{
+			wstring wfile = wstring(file.begin(), file.end());
+			WCHAR* result = (WCHAR*)wfile.c_str();
+			if (wcscmp(result, filename) == 0)
+			{
+				exist = 1;
+				break;
+			}
+		}
+		if (exist == 0)
+		{
+			message[0] = DOWN_FILE_CANCEL;
+			sendMessage(*client, message, wcslen(filename) + 1);
+			return 0;
+		}
+
+		WCHAR path[100];
+		wcscpy_s(path, L"File\\");
+		wcscat_s(path, filename);
+		WCHAR send[1000];
+		send[0] = SEND_FILE;
+		send[1] = NULL;
+		wcscat_s(send, filename);
+		hSentFile = CreateFile(path, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (hSentFile == INVALID_HANDLE_VALUE)
+			return 0;
+		DWORD highSize;
+		sentFileSize = GetFileSize(hSentFile, &highSize);
+
+		DWORD size = sentFileSize;
+		len = wcslen(send);
+		len++;
+		send[len++] = size >> 16;
+		send[len++] = size;
+		send[len++] = NULL;
+		sendMessage(*client, send, len);
 		
 		break;
 	}

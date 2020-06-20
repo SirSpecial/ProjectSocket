@@ -102,4 +102,5 @@ enum Flags
 
 	DOWN_FILE,
 	DOWN_FILE_CANCEL,
+	DOWN_MULTI,
 };
